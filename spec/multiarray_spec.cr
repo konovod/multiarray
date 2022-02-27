@@ -14,7 +14,7 @@ enum Years
   Year2022 = 2022
 end
 
-describe Multiarray do
+describe "MultiArray" do
   # TODO: Write tests
 
   it "allow creating multiarray" do
@@ -62,5 +62,21 @@ describe Multiarray do
     a[5, 6].should eq 2
     expect_raises(IndexError) { a[1, 10] }
     expect_raises(IndexError) { a[10, 1] }
+  end
+
+  it "allow different number of dimensions" do
+    a = MultiArray1(Float64, Seasons).new(1.0)
+    a[Seasons::Autumn] = 2.0
+    a[Seasons::Autumn].should eq 2
+
+    b = MultiArray3(Float64, Seasons, Years, 5).new(1.0)
+    b[Seasons::Autumn, 2020, 4] = 2.0
+    b[Seasons::Autumn, 2021, 0].should eq 1
+    b[Seasons::Autumn, 2020, 4].should eq 2
+
+    c = MultiArray5(Float64, Seasons, Years, 5, Seasons, Years).new(1.0)
+    c[Seasons::Autumn, 2022, 4, Seasons::Spring, 2021] = 2.0
+    c[Seasons::Autumn, 2022, 4, Seasons::Winter, 2021].should eq 1
+    c[Seasons::Autumn, 2022, 4, Seasons::Spring, 2021].should eq 2
   end
 end
