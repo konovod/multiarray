@@ -90,138 +90,119 @@ end
 #   end
 # end
 
-class MultiArray2(T, N1, N2)
+private macro declare_macro_array(n)
+class MultiArray{{n}}(T, 
+  {% for i in 1..n %}
+    N{{i}},
+  {% end %}
+  )
   @raw : Slice(T)
 
-  @[AlwaysInline]
-  private def size1
-    {% if N1.is_a? NumberLiteral %}
-      N1
-    {% else %}
-      N1.values.size
-    {% end %}
-  end
+{% for i in 1..n %}
+@[AlwaysInline]
+private def size{{i}}
+  \{% if N{{i}}.is_a? NumberLiteral %}
+    N{{i}}
+  \{% else %}
+    N{{i}}.values.size
+  \{% end %}
+end
 
-  @[AlwaysInline]
-  private def start1
-    {% if N1.is_a? NumberLiteral %}
-      0
-    {% else %}
-      N1.values[0].to_i
-    {% end %}
-  end
+@[AlwaysInline]
+private def start{{i}}
+  \{% if N{{i}}.is_a? NumberLiteral %}
+    0
+  \{% else %}
+    N{{i}}.values[0].to_i
+  \{% end %}
+end
+{% end %}
 
-  @[AlwaysInline]
-  private def size2
-    {% if N2.is_a? NumberLiteral %}
-      N2
-    {% else %}
-      N2.values.size
-    {% end %}
-  end
+def initialize(v : T)
+  @raw = Slice(T).new({% for i in 1..n %} size{{i}}*{% end %}1, v)
+end
 
-  @[AlwaysInline]
-  private def start2
-    {% if N2.is_a? NumberLiteral %}
-      0
-    {% else %}
-      N2.values[0].to_i
-    {% end %}
-  end
-
-  @[AlwaysInline]
-  private def i_to_index(i)
-    i1 = (i // size2) + start1
-    i2 = (i % size2) + start2
-    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
-      i1 = N1.new(i1)
-    {% end %}
-    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
-      i2 = N2.new(i2)
-    {% end %}
-    {i1, i2}
-  end
-
-  @[AlwaysInline]
-  private def index_to_i(i1, i2)
-    raise IndexError.new("Index outside of range") if i2 >= size2 + start2 || i2 < start2 || i1 < start1
-    (i1.to_i - start1)*size2 + (i2.to_i - start2)
-  end
-
-  def initialize(v : T)
-    @raw = Slice(T).new(size1*size2, v)
-  end
-
-  def initialize(&)
-    @raw = Slice(T).new(size1*size2) do |i|
-      i1, i2 = i_to_index(i)
-      T.new(yield(i1, i2))
-    end
-  end
-
-  @[AlwaysInline]
-  private def raw_at(i1, i2)
-    @raw[index_to_i(i1, i2)]
-  end
-
-  @[AlwaysInline]
-  private def raw_set(i1, i2, value)
-    @raw[index_to_i(i1, i2)] = value
-  end
-
-  def [](n1 : N1, n2 : N2)
-    raw_at(n1.to_i, n2.to_i)
-  end
-
-  def [](n1 : Int32, n2 : N2)
-    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
-      raise "integer index is not allowed as #{N1}"
-    {% end %}
-    raw_at(n1.to_i, n2.to_i)
-  end
-
-  def [](n1 : N1, n2 : Int32)
-    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
-    {% raise "integer index is not allowed as #{N2}" %}
-    {% end %}
-    raw_at(n1.to_i, n2.to_i)
-  end
-
-  def [](n1 : Int32, n2 : Int32)
-    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
-    {% raise "integer index is not allowed as #{N1}" %}
-    {% end %}
-    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
-    {% raise "integer index is not allowed as #{N2}" %}
-    {% end %}
-    raw_at(n1.to_i, n2.to_i)
-  end
-
-  def []=(n1 : N1, n2 : N2, value)
-    raw_set(n1.to_i, n2.to_i, value)
-  end
-
-  def []=(n1 : Int32, n2 : N2, value)
-    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
-      raise "integer index is not allowed as #{N1}"
-    {% end %}
-    raw_set(n1.to_i, n2.to_i, value)
-  end
-
-  def []=(n1 : N1, n2 : Int32, value)
-    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
-    {% raise "integer index is not allowed as #{N2}" %}
-    {% end %}
-    raw_set(n1.to_i, n2.to_i, value)
-  end
-
-  def []=(n1 : Int32, n2 : Int32, value)
-    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
-    {% raise "integer index is not allowed as #{N1}" %}
-    {% end %}
-    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
-    {% raise "integer index is not allowed as #{N2}" %}
-    {% end %}
-    raw_set(n1.to_i, n2.to_i, value)
+def initialize(&)
+  @raw = Slice(T).new({% for i in 1..n %} size{{i}}*{% end %}1) do |i|
+    i1 {% for i in 2..n %} ,i{{i}} {% end %}  = i_to_index(i)
+    T.new(yield(i1 {% for i in 2..n %} ,i{{i}} {% end %}))
   end
 end
+
+@[AlwaysInline]
+private def raw_at(i1 {% for i in 2..n %} ,i{{i}} {% end %})
+  @raw[index_to_i(i1 {% for i in 2..n %} ,i{{i}} {% end %})]
+end
+
+@[AlwaysInline]
+private def raw_set(i1 {% for i in 2..n %} ,i{{i}} {% end %}, value)
+  @raw[index_to_i(i1 {% for i in 2..n %} ,i{{i}} {% end %})] = value
+end
+
+{% for mask in 0...2**n %}
+def []({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %})
+  {% for i in 1..n %}
+  {% if mask & (1 << (i - 1)) > 0 %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(AllowInteger) %}
+    \{% raise "integer index is not allowed as #{N{{i}}}" %}
+    \{% end %}
+  {% end %}
+  {% end %}
+  raw_at({% for i in 1..n %}n{{i}}.to_i, {% end %})
+end
+
+def []=({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %} value : T)
+  {% for i in 1..n %}
+  {% if mask & (1 << (i - 1)) > 0 %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(AllowInteger) %}
+    \{% raise "integer index is not allowed as #{N{{i}}}" %}
+    \{% end %}
+  {% end %}
+  {% end %}
+  raw_set({% for i in 1..n %}n{{i}}.to_i, {% end %} value)
+end
+{% end %}
+
+@[AlwaysInline]
+private def index_to_i({% for i in 1..n %}i{{i}}, {% end %})
+  {% for i in 1..n %}
+    raise IndexError.new("Index {{i}} outside of range") if i{{i}} >= size{{i}} + start{{i}} || i{{i}} < start{{i}}
+  {% end %}
+  v = 0  
+  {% for i in 1..n %}
+    v = v + (i{{i}}.to_i - start{{i}})
+    {% if i < n %}
+    v = v * size{{i + 1}}
+    {% end %}
+  {% end %}
+  v
+end
+
+@[AlwaysInline]
+private def i_to_index(i)
+  {% for di in 0...n %}
+  {% i = n - di %}
+    {% if i > 1 %}
+      i{{i}} = (i % size{{i}}) + start{{i}}
+      i = i // size{{i}} 
+    {% else %}
+      i{{i}} = i + start{{i}}
+    {% end %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(AllowInteger) %}
+    i{{i}} = N{{i}}.new(i{{i}})
+    \{% end %}
+  {% end %}
+  {i1 {% for i in 2..n %}, i{{i}}{% end %} }
+end
+
+
+end
+
+end
+
+declare_macro_array(1)
+declare_macro_array(2)
+declare_macro_array(3)
+declare_macro_array(4)
+declare_macro_array(5)
+declare_macro_array(6)
