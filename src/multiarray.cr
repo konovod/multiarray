@@ -1,94 +1,7 @@
-# TODO: Write documentation for `Multiarray`
-module Multiarray
-  VERSION = "0.1.0"
-
-  # TODO: Put your code here
+module MultiArrayUtils
+  annotation AllowInteger
+  end
 end
-
-annotation AllowInteger
-end
-
-# class MultiArray(T)
-#   @raw : Slice(T)
-#   @dimensions : Array(Int32)
-#   @starts : Array(Int32)
-
-#   # @reusable_index : Array(Int32)
-
-#   def initialize(dimensions, value : T)
-#     @dimensions = Array(Int32).new(dimensions.size) do |i|
-#       dim = dimensions[i]
-#       case dim
-#       when Enum.class
-#         dim.values.size
-#       when Range
-#         dim.end - dim.begin + 1
-#       when Int
-#         Int32.new(dim)
-#       else
-#         raise "unsupported dimension: #{dim}"
-#       end
-#     end
-#     @starts = Array(Int32).new(dimensions.size) do |i|
-#       dim = dimensions[i]
-#       case dim
-#       when Enum.class
-#         dim.values.first.to_i
-#       when Range
-#         dim.begin
-#       when Int
-#         0
-#       else
-#         raise "unsupported dimension: #{dim}"
-#       end
-#     end
-#     total = @dimensions.sum
-#     @raw = Slice(T).new(total, value)
-#   end
-
-#   def initialize(dimensions, &)
-#     @dimensions = dimensions.map do |dim|
-#       case dim
-#       when Enum
-#         dim.values.size
-#       when Range
-#         dim.end - dim.start + 1
-#       when Int
-#         Int32.new(dim)
-#       else
-#         raise "unsupported dimension: #{dim}"
-#       end
-#     end
-#     @starts = dimensions.map do |dim|
-#       case dim
-#       when Enum
-#         dim.values.first.to_i
-#       when Range
-#         dim.start
-#       when Int
-#         0
-#       else
-#         raise "unsupported dimension: #{dim}"
-#       end
-#     end
-#     total = @dimensions.sum
-#     @raw = Slice(T).new(total) do |i|
-#       yield(i)
-#     end
-#   end
-
-#   private def index_to_i(*args)
-#     result = 0
-#     args.each_with_index do |v, i|
-#       result = result * @dimensions[i - 1] unless i == 0
-#       result += v.to_i - @starts[i]
-#     end
-#     result
-#   end
-
-#   private def i_to_index(*args)
-#   end
-# end
 
 private macro declare_macro_array(n)
 class MultiArray{{n}}(T, 
@@ -143,7 +56,7 @@ end
 def []({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %})
   {% for i in 1..n %}
   {% if mask & (1 << (i - 1)) > 0 %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(AllowInteger) %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
     \{% raise "integer index is not allowed as #{N{{i}}}" %}
     \{% end %}
   {% end %}
@@ -154,7 +67,7 @@ end
 def []=({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %} value : T)
   {% for i in 1..n %}
   {% if mask & (1 << (i - 1)) > 0 %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(AllowInteger) %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
     \{% raise "integer index is not allowed as #{N{{i}}}" %}
     \{% end %}
   {% end %}
@@ -188,7 +101,7 @@ private def i_to_index(i)
     {% else %}
       i{{i}} = i + start{{i}}
     {% end %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(AllowInteger) %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
     i{{i}} = N{{i}}.new(i{{i}})
     \{% end %}
   {% end %}

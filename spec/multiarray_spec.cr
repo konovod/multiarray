@@ -7,12 +7,7 @@ enum Seasons
   Winter
 end
 
-@[AllowInteger]
-enum Years
-  Year2020 = 2020
-  Year2021 = 2021
-  Year2022 = 2022
-end
+MultiArrayUtils.declare_range_enum(Years, 2020, 2022)
 
 describe "MultiArray" do
   # TODO: Write tests
@@ -23,7 +18,7 @@ describe "MultiArray" do
 
   it "allow indexing with enums" do
     consumption = MultiArray2(Float64, Years, Seasons).new(1.0)
-    consumption[Years::Year2020, Seasons::Spring].should eq 1.0
+    consumption[Years::Y2020, Seasons::Spring].should eq 1.0
   end
 
   it "allow indexing with integers" do
