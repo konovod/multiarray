@@ -14,9 +14,6 @@ enum Years
   Year2022 = 2022
 end
 
-# a = MultiArray2(Float64, 1, Seasons).new(1)
-# b = MultiArray(Float64).new({1, 2020..2035, Seasons}, 0.0)
-
 describe Multiarray do
   # TODO: Write tests
 
@@ -50,5 +47,20 @@ describe Multiarray do
       s1.to_i*10000 + y
     end
     consumption[Seasons::Autumn, 2020].should eq 20000 + 2020
+  end
+
+  it "allow creating using number as index" do
+    a = MultiArray2(Float64, 6, Seasons).new(1.0)
+    a[1, Seasons::Autumn] = 2.0
+    a[1, Seasons::Autumn].should eq 2
+  end
+
+  it "allow creating using two numbers as index" do
+    a = MultiArray2(Float64, 10, 10).new(1.0)
+    a[5, 6] = 2.0
+    a[6, 5].should eq 1
+    a[5, 6].should eq 2
+    expect_raises(IndexError) { a[1, 10] }
+    expect_raises(IndexError) { a[10, 1] }
   end
 end

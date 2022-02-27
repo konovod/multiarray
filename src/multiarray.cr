@@ -133,10 +133,10 @@ class MultiArray2(T, N1, N2)
   private def i_to_index(i)
     i1 = (i // size2) + start1
     i2 = (i % size2) + start2
-    {% if N1 < Enum && !N1.annotation(AllowInteger) %}
+    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
       i1 = N1.new(i1)
     {% end %}
-    {% if N2 < Enum && !N2.annotation(AllowInteger) %}
+    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
       i2 = N2.new(i2)
     {% end %}
     {i1, i2}
@@ -174,24 +174,24 @@ class MultiArray2(T, N1, N2)
   end
 
   def [](n1 : Int32, n2 : N2)
-    {% unless N1.annotation(AllowInteger) %}
+    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
       raise "integer index is not allowed as #{N1}"
     {% end %}
     raw_at(n1.to_i, n2.to_i)
   end
 
   def [](n1 : N1, n2 : Int32)
-    {% unless N2.annotation(AllowInteger) %}
+    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
     {% raise "integer index is not allowed as #{N2}" %}
     {% end %}
     raw_at(n1.to_i, n2.to_i)
   end
 
   def [](n1 : Int32, n2 : Int32)
-    {% unless N1.annotation(AllowInteger) %}
+    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
     {% raise "integer index is not allowed as #{N1}" %}
     {% end %}
-    {% unless N2.annotation(AllowInteger) %}
+    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
     {% raise "integer index is not allowed as #{N2}" %}
     {% end %}
     raw_at(n1.to_i, n2.to_i)
@@ -201,25 +201,25 @@ class MultiArray2(T, N1, N2)
     raw_set(n1.to_i, n2.to_i, value)
   end
 
-  def [](n1 : Int32, n2 : N2, value)
-    {% unless N1.annotation(AllowInteger) %}
+  def []=(n1 : Int32, n2 : N2, value)
+    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
       raise "integer index is not allowed as #{N1}"
     {% end %}
     raw_set(n1.to_i, n2.to_i, value)
   end
 
-  def [](n1 : N1, n2 : Int32, value)
-    {% unless N2.annotation(AllowInteger) %}
+  def []=(n1 : N1, n2 : Int32, value)
+    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
     {% raise "integer index is not allowed as #{N2}" %}
     {% end %}
     raw_set(n1.to_i, n2.to_i, value)
   end
 
-  def [](n1 : Int32, n2 : Int32, value)
-    {% unless N1.annotation(AllowInteger) %}
+  def []=(n1 : Int32, n2 : Int32, value)
+    {% if !N1.is_a?(NumberLiteral) && !N1.annotation(AllowInteger) %}
     {% raise "integer index is not allowed as #{N1}" %}
     {% end %}
-    {% unless N2.annotation(AllowInteger) %}
+    {% if !N2.is_a?(NumberLiteral) && !N2.annotation(AllowInteger) %}
     {% raise "integer index is not allowed as #{N2}" %}
     {% end %}
     raw_set(n1.to_i, n2.to_i, value)
