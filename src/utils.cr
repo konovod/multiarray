@@ -9,17 +9,37 @@ module MultiArrayUtils
   end
 
   module For(*T)
-    def self.sum(&)
-      {% begin %}  
-      v = 0
-      {% for typ, i in T %}
-        {{typ}}.values.each do | %var{i} |
-      {% end %}
-        v += yield( {% for typ, i in T %} %var{i}, {% end %} )
-      {% for typ, i in T %}
-        end
-      {% end %}
-      v
+    private macro define_reduce(name, operation)
+      def self.{{name}}(&)
+        \{% begin %}  
+        found = false
+        v = uninitialized typeof( yield( \{% for typ, i in T %} \{{typ}}.values[0], \{% end %} ))
+        \{% for typ, i in T %}
+          \{{typ}}.values.each do | \%var{i} |
+        \{% end %}
+          if found 
+            value = yield( \{% for typ, i in T %} \%var{i}, \{% end %} )
+            {{operation.id}}
+          else
+            found = true
+            v = yield( \{% for typ, i in T %} \%var{i}, \{% end %} )
+          end
+        \{% for typ, i in T %}
+          end
+        \{% end %}
+        v
+        \{% end %}
+      end
+    end
+
+    define_reduce(sum, "v+=value")
+    define_reduce(product, "v*=value")
+    define_reduce(max, "v = value if v < value")
+    define_reduce(min, "v = value if v > value")
+
+    def self.mean(&)
+      {% begin %}
+      (sum { |*args| yield(*args) } ) {% for typ in T %} / {{typ}}.values.size {% end %}
       {% end %}
     end
   end

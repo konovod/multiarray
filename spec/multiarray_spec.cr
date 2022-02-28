@@ -85,4 +85,22 @@ describe MultiArrayUtils do
     end
     total.should eq 20000 + 12 - 1
   end
+
+  it "allow product over several dimensions" do
+    consumption = MultiArray2(Float64, Years, Seasons).new(1.0)
+    consumption[2021, Seasons::Spring] = 20000
+    total = MultiArrayUtils::For(Years, Seasons).product do |y, s|
+      consumption[y, s]
+    end
+    total.should eq 20000
+  end
+
+  it "allow mean over several dimensions" do
+    consumption = MultiArray2(Float64, Years, Seasons).new(1.0)
+    consumption[2021, Seasons::Spring] = 25
+    total = MultiArrayUtils::For(Years, Seasons).mean do |y, s|
+      consumption[y, s]
+    end
+    total.should eq 36 / 12
+  end
 end
