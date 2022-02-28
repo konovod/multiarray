@@ -42,5 +42,29 @@ module MultiArrayUtils
       (sum { |*args| yield(*args) } ) {% for typ in T %} / {{typ}}.values.size {% end %}
       {% end %}
     end
+
+    def self.reduce(initial, &)
+      {% begin %}  
+      v = initial
+      {% for typ, i in T %}
+        {{typ}}.values.each do | %var{i} |
+      {% end %}
+          v = yield( v, {% for typ, i in T %} %var{i}, {% end %} )
+      {% for typ, i in T %}
+        end
+      {% end %}
+      v
+      {% end %}
+    end
+
+    def self.count(&)
+      reduce(0) { |v, *args| yield(*args) ? v + 1 : v }
+    end
+
+    def self.count
+      {% begin %}  
+      1 {% for typ in T %} * {{typ}}.values.size {% end %}
+      {% end %}
+    end
   end
 end
