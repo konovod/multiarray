@@ -1,3 +1,5 @@
+require "./utils"
+
 module MultiArrayUtils
   annotation AllowInteger
   end
@@ -105,7 +107,7 @@ private def i_to_index(i)
     i{{i}} = N{{i}}.new(i{{i}})
     \{% end %}
   {% end %}
-  {i1 {% for i in 2..n %}, i{{i}}{% end %} }
+  return i1 {% for i in 2..n %}, i{{i}}{% end %}
 end
 
 
