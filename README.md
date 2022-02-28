@@ -3,7 +3,7 @@
 MultiArray is a shard with multidimensional arrays that can be indexed using enums or integer ranges.
 It also include number of helper functions that could be useful in DSLs for multidimensional optimization and other areas.
 
-This is WIP and just a draft for now.
+This is WIP and just a sketch for now, but fuctionality in the [Usage](#Usage) section should work.
 
 ## Installation
 
@@ -32,11 +32,18 @@ enum Seasons
 end
 
 # Years = 2020..2035
-# for now, ranges are not allowed in generics syntax, so here is a hack^
+# for now, ranges are not allowed in generics syntax, so here is a hacky way:
 declare_range_enum(Years, 2020, 2035)
+# is equivalent to
+# Enum Years
+# Y2020 = 2020
+# Y2021 = 2021
+# ...
+# Y2035 = 2035
+# end
 
 # create array with indexes being Range and Enum
-# for now, variadic generics are a problem, so type name should include number of dimensions
+# for now, variadic generics are a problem, so type name must include number of dimensions
 # up to 6 dimensions are supported.
 consumption = MultiArray2(Float64, Years, Seasons).new(0.0)
 
@@ -56,7 +63,16 @@ by_season = MultiArray1(Float64, Seasons).new do |s|
 end
 
 # another way to reduce dimensions is to use `reduce_by` function
-by_year = consumption.reduce_by(:keep, :sum)
+# this is a planned feature, I'm not sure how it should work with multiple dimensions
+# by_year = consumption.reduce_by(:keep, :sum)
+
+# `#to_unsafe` returns an underlaying slice that can be passed to various bindings and libraries
+# mt = LA::GMat.new(consumption.size1, consumption.size2, consumption.to_unsafe)
+
+# you can also iterate it using `#each`, `#each_index` and `#each_with_index`:
+consumption.each_with_index do |v, y, s|
+  puts "[#{y}, #{s}] : #{v}"
+end
 ```
 
 ## Development

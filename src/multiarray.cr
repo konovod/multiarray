@@ -138,6 +138,24 @@ def inspect(io)
   {% end %}
 end
 
+def to_unsafe
+  @raw
+end
+
+def each(&)
+  @raw.each { |v| yield(v) }
+end
+
+def each_with_index
+  @raw.each_with_index { |v, i| yield(v, *i_to_index(i)) }
+end
+
+def each_index
+  @raw.each_index { |i| yield(*i_to_index(i)) }
+end
+
+
+
 end
 
 end

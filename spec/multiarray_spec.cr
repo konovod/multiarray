@@ -65,4 +65,25 @@ describe "MultiArray" do
     c[Seasons::Autumn, 2022, 4, Seasons::Winter, 2021].should eq 1
     c[Seasons::Autumn, 2022, 4, Seasons::Spring, 2021].should eq 2
   end
+
+  it "allow iterating" do
+    a = MultiArray2(Float64, Years, Years).new(1.0)
+    a[2021, 2020] = 2.0
+    vector = Slice[1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    a.to_unsafe.should eq vector
+    
+    i = 0
+    e.each |v|
+      v.should eq vector[i]
+      i+=1
+    end
+    e.each_with_index |v, y1, y2|
+      if y1 == 2021 && y2 == 2020
+        v.should eq 2
+      else
+        v.should eq 1
+      end
+    end
+
+  end
 end
