@@ -73,6 +73,9 @@ end
 consumption.each_with_index do |v, y, s|
   puts "[#{y}, #{s}] : #{v}"
 end
+
+# and print using `#inspect` or `#to_s`
+puts consumption
 ```
 
 ## Development

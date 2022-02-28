@@ -110,8 +110,11 @@ private def i_to_index(i)
   return i1 {% for i in 2..n %}, i{{i}}{% end %}
 end
 
-
 def inspect(io)
+  to_s(io)
+end
+
+def to_s(io)
   io << self.class << ":\n"
   {% begin %}
   {% for i in 1...n %}

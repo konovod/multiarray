@@ -71,19 +71,18 @@ describe "MultiArray" do
     a[2021, 2020] = 2.0
     vector = Slice[1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     a.to_unsafe.should eq vector
-    
+
     i = 0
-    e.each |v|
+    a.each do |v|
       v.should eq vector[i]
-      i+=1
+      i += 1
     end
-    e.each_with_index |v, y1, y2|
+    a.each_with_index do |v, y1, y2|
       if y1 == 2021 && y2 == 2020
         v.should eq 2
       else
         v.should eq 1
       end
     end
-
   end
 end
