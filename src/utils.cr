@@ -13,16 +13,16 @@ module MultiArrayUtils
       def self.{{name}}(&)
         \{% begin %}  
         found = false
-        v = uninitialized typeof( yield( \{% for typ, i in T %} \{{typ}}.values[0], \{% end %} ))
+        v = uninitialized typeof( yield( \{% for typ, i in T %} \{{typ}}.values[0]\{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, \{% end %} ))
         \{% for typ, i in T %}
           \{{typ}}.values.each do | \%var{i} |
         \{% end %}
           if found 
-            value = yield( \{% for typ, i in T %} \%var{i}, \{% end %} )
+            value = yield( \{% for typ, i in T %} \%var{i}\{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, \{% end %} )
             {{operation.id}}
           else
             found = true
-            v = yield( \{% for typ, i in T %} \%var{i}, \{% end %} )
+            v = yield( \{% for typ, i in T %} \%var{i}\{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, \{% end %} )
           end
         \{% for typ, i in T %}
           end
@@ -49,7 +49,7 @@ module MultiArrayUtils
       {% for typ, i in T %}
         {{typ}}.values.each do | %var{i} |
       {% end %}
-          v = yield( v, {% for typ, i in T %} %var{i}, {% end %} )
+          v = yield( v, {% for typ, i in T %} %var{i}{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, {% end %} )
       {% for typ, i in T %}
         end
       {% end %}
@@ -69,7 +69,7 @@ module MultiArrayUtils
 
     def self.map(&)
       {% begin %}
-        MultiArray{{T.size}}(typeof(yield({% for typ, i in T %} {{typ}}.values[0], {% end %})), *T).new { |*args| yield(*args)}
+        MultiArray{{T.size}}(typeof(yield({% for typ, i in T %} {{typ}}.values[0]{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, {% end %})), *T).new { |*args| yield(*args)}
       {% end %}
     end
   end
