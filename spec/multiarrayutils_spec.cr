@@ -61,4 +61,12 @@ describe MultiArrayUtils do
       consumption[y, s] > 10 ? y : v
     end.should eq Years::Y2021
   end
+
+  it "#map" do
+    arr = MultiArrayUtils::For(Years, Seasons, Years, Seasons).map do |y1, s1, y2, s2|
+      (y2.to_i*4 + s2.to_i - y1.to_i*4 + s1.to_i)
+    end
+    arr.should be_a MultiArray4(Int32, Years, Seasons, Years, Seasons)
+    arr[2021, :autumn, 2022, :spring].should eq 6
+  end
 end

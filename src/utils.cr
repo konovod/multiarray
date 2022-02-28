@@ -66,5 +66,11 @@ module MultiArrayUtils
       1 {% for typ in T %} * {{typ}}.values.size {% end %}
       {% end %}
     end
+
+    def self.map(&)
+      {% begin %}
+        MultiArray{{T.size}}(typeof(yield({% for typ, i in T %} {{typ}}.values[0], {% end %})), *T).new { |*args| yield(*args)}
+      {% end %}
+    end
   end
 end
