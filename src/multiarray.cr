@@ -111,6 +111,33 @@ private def i_to_index(i)
 end
 
 
+def inspect(io)
+  io << self.class << ":\n"
+  {% begin %}
+  {% for i in 1...n %}
+    (start{{i}} ... (start{{i}}+size{{i}})).each do |i{{i}}| 
+  {% end %}
+    {% for i in 1...n %}
+      \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
+        i{{i}} = N{{i}}.new(i{{i}})
+      \{% end %}
+    {% end %}
+    {% if n > 1 %}
+      io << "  [" << i1 {% for i in 2...n %} << ", " << i{{i}} {% end %} << "]: "
+    {% end %}
+      (start{{n}} ... (start{{n}}+size{{n}})).each do |i{{n}}|
+        last = (i{{n}} == start{{n}}+size{{n}}-1)
+        \{% if !N{{n}}.is_a?(NumberLiteral) && !N{{n}}.annotation(MultiArrayUtils::AllowInteger) %}
+          i{{n}} = N{{n}}.new(i{{n}})
+        \{% end %}
+        io << self[{% for i in 1..n %} i{{i}},  {% end %}] << (last ? "\n" : ", ")
+      end
+  {% for i in 1...n %}
+    end
+  {% end %}
+  {% end %}
+end
+
 end
 
 end
