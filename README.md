@@ -62,6 +62,7 @@ end
 # `#to_unsafe` returns an underlaying `Slice(T)` that can be passed to various bindings and libraries
 # mt = LA::GMat.new(consumption.size1, consumption.size2, consumption.to_unsafe)
 # tensor = Tensor.new([consumption.size1, consumption.size2]) {|i| consumption.to_unsafe[i] }
+
 # you can also iterate it using `#each`, `#each_index` and `#each_with_index`:
 consumption.each_with_index do |v, y, s|
   puts "[#{y}, #{s}] : #{v}"
@@ -72,6 +73,6 @@ puts consumption
 ```
 
 ## Plans
- - [] actually use it with nlopt or something (would require another shard)
- - [] reduce_by (need more planning)
- - [] runtime ranges
+ - [ ] actually use it with nlopt or something (would require another shard)
+ - [ ] reduce_by (need more planning)
+ - [ ] runtime ranges
