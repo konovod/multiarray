@@ -7,12 +7,7 @@ describe "MultiArray" do
     consumption = MultiArray2(Float64, Years, Seasons).new(0.0)
   end
 
-  it "allow indexing with enums" do
-    consumption = MultiArray2(Float64, Years, Seasons).new(1.0)
-    consumption[Years::Y2020, Seasons::Spring].should eq 1.0
-  end
-
-  it "allow indexing with integers" do
+  it "allow indexing with enums and integers" do
     consumption = MultiArray2(Float64, Years, Seasons).new(2.0)
     consumption[2020, Seasons::Spring].should eq 2.0
   end

@@ -10,15 +10,8 @@ enum Seasons
 end
 
 # Years = 2020..2035
-# for now, ranges are not allowed in generics syntax, so here is a hacky way:
-declare_range_enum(Years, 2020, 2035)
-# is equivalent to
-# Enum Years
-# Y2020 = 2020
-# Y2021 = 2021
-# ...
-# Y2035 = 2035
-# end
+# ranges are a runtime construct so not allowed in generics, so here is a "compile-time range" (CTRange)
+alias Years = CTRange(2020, 2035)
 
 # create array with indexes being Range and Enum
 # for now, variadic generics are a problem, so type name must include number of dimensions

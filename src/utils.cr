@@ -1,28 +1,19 @@
 module MultiArrayUtils
-  macro declare_range_enum(typ, start, finish)
-    @[MultiArrayUtils::AllowInteger]
-    enum {{typ}}
-      {% for i in (start..finish) %}
-        {{typ.stringify[0..0].id}}{{i}} = {{i}}
-      {% end %}
-    end
-  end
-
   module For(*T)
     private macro define_reduce(name, operation)
       def self.{{name}}(&)
         \{% begin %}  
         found = false
-        v = uninitialized typeof( yield( \{% for typ, i in T %} \{{typ}}.values[0]\{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, \{% end %} ))
+        v = uninitialized typeof( yield( \{% for typ, i in T %} \{{typ}}.values[0], \{% end %} ))
         \{% for typ, i in T %}
           \{{typ}}.values.each do | \%var{i} |
         \{% end %}
           if found 
-            value = yield( \{% for typ, i in T %} \%var{i}\{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, \{% end %} )
+            value = yield( \{% for typ, i in T %} \%var{i}, \{% end %} )
             {{operation.id}}
           else
             found = true
-            v = yield( \{% for typ, i in T %} \%var{i}\{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, \{% end %} )
+            v = yield( \{% for typ, i in T %} \%var{i}, \{% end %} )
           end
         \{% for typ, i in T %}
           end
@@ -49,7 +40,7 @@ module MultiArrayUtils
       {% for typ, i in T %}
         {{typ}}.values.each do | %var{i} |
       {% end %}
-          v = yield( v, {% for typ, i in T %} %var{i}{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, {% end %} )
+          v = yield( v, {% for typ, i in T %} %var{i}, {% end %} )
       {% for typ, i in T %}
         end
       {% end %}
@@ -69,7 +60,7 @@ module MultiArrayUtils
 
     def self.map(&)
       {% begin %}
-        MultiArray{{T.size}}(typeof(yield({% for typ, i in T %} {{typ}}.values[0]{{typ.annotation(MultiArrayUtils::AllowInteger) ? ".to_i".id : "".id}}, {% end %})), *T).new { |*args| yield(*args)}
+        MultiArray{{T.size}}(typeof(yield({% for typ, i in T %} {{typ}}.values[0], {% end %})), *T).new { |*args| yield(*args)}
       {% end %}
     end
   end

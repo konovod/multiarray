@@ -8,4 +8,4 @@ enum Seasons
   Winter
 end
 
-MultiArrayUtils.declare_range_enum(Years, 2020, 2022)
+alias Years = MultiArrayUtils::CTRange(2020, 2022)

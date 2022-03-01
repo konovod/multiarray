@@ -1,7 +1,37 @@
 require "./utils"
 
 module MultiArrayUtils
-  annotation AllowInteger
+  # Compile-time range.
+  # Mimics `Enum` as an array index: has `#values` to iterate and `#new`, but `#new` returns Int32 instead of Enums
+  module CTRange(N1, N2)
+    private module CTRangeValues(N1, N2)
+      def self.[](index)
+        index + N1
+      end
+
+      def self.size
+        N2 - N1 + 1
+      end
+
+      def self.first
+        N1
+      end
+
+      def self.each(&)
+        (N1..N2).each do |i|
+          yield(i)
+        end
+      end
+    end
+
+    def self.values
+      CTRangeValues(N1, N2)
+    end
+
+    def self.new(value)
+      raise ArgumentError.new("value #{value} is outside range #{N1}..#{N2}") unless (N1..N2).includes?(value)
+      value
+    end
   end
 end
 
@@ -58,7 +88,7 @@ end
 def []({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %})
   {% for i in 1..n %}
   {% if mask & (1 << (i - 1)) > 0 %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
     \{% raise "integer index is not allowed as #{N{{i}}}" %}
     \{% end %}
   {% end %}
@@ -69,7 +99,7 @@ end
 def []=({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %} value : T)
   {% for i in 1..n %}
   {% if mask & (1 << (i - 1)) > 0 %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
     \{% raise "integer index is not allowed as #{N{{i}}}" %}
     \{% end %}
   {% end %}
@@ -103,8 +133,8 @@ private def i_to_index(i)
     {% else %}
       i{{i}} = i + start{{i}}
     {% end %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
-    i{{i}} = N{{i}}.new(i{{i}})
+    \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
+      i{{i}} = N{{i}}.new(i{{i}})
     \{% end %}
   {% end %}
   return i1 {% for i in 2..n %}, i{{i}}{% end %}
@@ -121,7 +151,7 @@ def to_s(io)
     (start{{i}} ... (start{{i}}+size{{i}})).each do |i{{i}}| 
   {% end %}
     {% for i in 1...n %}
-      \{% if !N{{i}}.is_a?(NumberLiteral) && !N{{i}}.annotation(MultiArrayUtils::AllowInteger) %}
+      \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
         i{{i}} = N{{i}}.new(i{{i}})
       \{% end %}
     {% end %}
@@ -130,7 +160,7 @@ def to_s(io)
     {% end %}
       (start{{n}} ... (start{{n}}+size{{n}})).each do |i{{n}}|
         last = (i{{n}} == start{{n}}+size{{n}}-1)
-        \{% if !N{{n}}.is_a?(NumberLiteral) && !N{{n}}.annotation(MultiArrayUtils::AllowInteger) %}
+        \{% if !N{{n}}.is_a?(NumberLiteral) && N{{n}} < Enum %}
           i{{n}} = N{{n}}.new(i{{n}})
         \{% end %}
         io << self[{% for i in 1..n %} i{{i}},  {% end %}] << (last ? "\n" : ", ")
