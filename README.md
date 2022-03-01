@@ -32,7 +32,7 @@ enum Seasons
 end
 
 # Years = 2020..2035
-# ranges are a runtime construct so not allowed in generics, so here is a "compile-time range" (CTRange)
+# ranges are runtime construct so not allowed in generics, use "compile-time range" (CTRange)
 alias Years = CTRange(2020, 2035)
 
 # create array with indexes being Range and Enum
@@ -59,9 +59,9 @@ end
 # this is a planned feature, I'm not sure how it should work with multiple dimensions
 # by_year = consumption.reduce_by(:keep, :sum)
 
-# `#to_unsafe` returns an underlaying slice that can be passed to various bindings and libraries
+# `#to_unsafe` returns an underlaying `Slice(T)` that can be passed to various bindings and libraries
 # mt = LA::GMat.new(consumption.size1, consumption.size2, consumption.to_unsafe)
-
+# tensor = Tensor.new([consumption.size1, consumption.size2]) {|i| consumption.to_unsafe[i] }
 # you can also iterate it using `#each`, `#each_index` and `#each_with_index`:
 consumption.each_with_index do |v, y, s|
   puts "[#{y}, #{s}] : #{v}"
@@ -71,18 +71,7 @@ end
 puts consumption
 ```
 
-## Development
-
-TODO: Write development instructions here
-
-## Contributing
-
-1. Fork it (<https://github.com/konovod/multiarray/fork>)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
-
-## Contributors
-
-- [Andrey Konovod](https://github.com/konovod) - creator and maintainer
+## Plans
+ - [] actually use it with nlopt or something (would require another shard)
+ - [] reduce_by (need more planning)
+ - [] runtime ranges

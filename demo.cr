@@ -37,8 +37,9 @@ end
 # this is a planned feature, I'm not sure how it should work with multiple dimensions
 # by_year = consumption.reduce_by(:keep, :sum)
 
-# `#to_unsafe` returns an underlaying slice that can be passed to various bindings and libraries
+# `#to_unsafe` returns an underlaying `Slice(T)` that can be passed to various bindings and libraries
 # mt = LA::GMat.new(consumption.size1, consumption.size2, consumption.to_unsafe)
+# tensor = Tensor.new([consumption.size1, consumption.size2]) {|i| consumption.to_unsafe[i] }
 
 # you can also iterate it using `#each`, `#each_index` and `#each_with_index`:
 consumption.each_with_index do |v, y, s|
