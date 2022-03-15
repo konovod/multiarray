@@ -33,6 +33,28 @@ module MultiArrayUtils
       value
     end
   end
+
+  abstract struct RTEnum
+    @raw : Int32
+
+    def to_i
+      @raw
+    end
+
+    def initialize(@raw, *, dont_check = false)
+      raise ArgumentError.new("value #{@raw} is outside range #{0}..#{@@values.size - 1}") unless dont_check || (0...@@values.size).includes?(@raw)
+    end
+
+    @@values = [] of RTEnum
+
+    def self.values
+      @@values.as(Array(self))
+    end
+
+    def self.set_size(count)
+      @@values = Array(self).new(count) { |i| self.new(i, dont_check: true) }
+    end
+  end
 end
 
 private macro declare_macro_array(n)
