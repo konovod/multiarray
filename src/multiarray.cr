@@ -45,22 +45,43 @@ module MultiArrayUtils
       raise ArgumentError.new("value #{@raw} is outside range #{0}..#{@@values.size - 1}") unless dont_check || (0...@@values.size).includes?(@raw)
     end
 
+    def initialize(other : self)
+      @raw = other.to_i
+    end
+
+    def initialize(value : String)
+      @raw = @@names_to_id[value]
+    end
+
     @@values = [] of RTEnum
+
     @@names : Array(String)?
+    @@names_to_id = {} of String => Int32
 
     def self.values
       @@values.as(Array(self))
     end
 
+    private def self.build_str_map
+      @@names_to_id.clear
+      if names = @@names
+        names.each_with_index do |s, i|
+          @@names_to_id[s] = i
+        end
+      end
+    end
+
     def self.set_size(count)
       @@names = nil
       @@values = Array(self).new(count) { |i| self.new(i, dont_check: true) }
+      build_str_map
     end
 
     def self.set_names(names)
       n = names.size
       @@names = Array(String).new(n) { |i| names[i] }
       @@values = Array(self).new(n) { |i| self.new(i, dont_check: true) }
+      build_str_map
     end
 
     def to_s(io)
@@ -132,7 +153,7 @@ end
 def []({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %})
   {% for i in 1..n %}
   {% if mask & (1 << (i - 1)) > 0 %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && (N{{i}} < Enum || N{{i}} < MultiArrayUtils::RTEnum) %}
     \{% raise "integer index is not allowed as #{N{{i}}}" %}
     \{% end %}
   {% end %}
@@ -143,7 +164,7 @@ end
 def []=({% for i in 1..n %} n{{i}} : {{mask & (1 << (i - 1)) > 0 ? "Int32".id : "N#{i}".id}}, {% end %} value : T)
   {% for i in 1..n %}
   {% if mask & (1 << (i - 1)) > 0 %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && (N{{i}} < Enum || N{{i}} < MultiArrayUtils::RTEnum) %}
     \{% raise "integer index is not allowed as #{N{{i}}}" %}
     \{% end %}
   {% end %}
@@ -177,7 +198,7 @@ private def i_to_index(i)
     {% else %}
       i{{i}} = i + start{{i}}
     {% end %}
-    \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
+    \{% if !N{{i}}.is_a?(NumberLiteral) && (N{{i}} < Enum || N{{i}} < MultiArrayUtils::RTEnum) %}
       i{{i}} = N{{i}}.new(i{{i}})
     \{% end %}
   {% end %}
@@ -192,19 +213,21 @@ def to_s(io)
   io << self.class << ":\n"
   {% begin %}
   {% for i in 1...n %}
-    (start{{i}} ... (start{{i}}+size{{i}})).each do |i{{i}}| 
+    (start{{i}} ... (start{{i}}+size{{i}})).each do |index{{i}}| 
   {% end %}
     {% for i in 1...n %}
-      \{% if !N{{i}}.is_a?(NumberLiteral) && N{{i}} < Enum %}
-        i{{i}} = N{{i}}.new(i{{i}})
-      \{% end %}
+      i{{i}} = \{% if !N{{i}}.is_a?(NumberLiteral) && (N{{i}} < Enum || N{{i}} < MultiArrayUtils::RTEnum) %}
+                 N{{i}}.new(index{{i}})
+               \{% else %}  
+                 index{{i}}
+               \{% end %}
     {% end %}
     {% if n > 1 %}
       io << "  [" << i1 {% for i in 2...n %} << ", " << i{{i}} {% end %} << "]: "
     {% end %}
       (start{{n}} ... (start{{n}}+size{{n}})).each do |i{{n}}|
         last = (i{{n}} == start{{n}}+size{{n}}-1)
-        \{% if !N{{n}}.is_a?(NumberLiteral) && N{{n}} < Enum %}
+        \{% if !N{{n}}.is_a?(NumberLiteral) && (N{{n}} < Enum || N{{n}} < MultiArrayUtils::RTEnum) %}
           i{{n}} = N{{n}}.new(i{{n}})
         \{% end %}
         io << self[{% for i in 1..n %} i{{i}},  {% end %}] << (last ? "\n" : ", ")

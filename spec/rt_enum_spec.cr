@@ -32,4 +32,13 @@ describe MultiArrayUtils::RTEnum do
     RTEnum1.values.map(&.to_s).should eq ["v1", "v2", "v3"]
     RTEnum2.values.map(&.to_s).should eq ["0", "1", "2", "3", "4"]
   end
+
+  it "allows creating MultiArray" do
+    RTEnum1.set_names ["v1", "v2", "v3"]
+    RTEnum2.set_names ["u1", "u2", "u3", "u4"]
+    arr = MultiArray3(Float64, RTEnum1, Seasons, RTEnum2).new(1.0)
+    arr[RTEnum1.new("v1"), Seasons::Winter, RTEnum2.new("u2")] = 2.0
+    arr[RTEnum1.new("v2"), Seasons::Winter, RTEnum2.new("u1")].should eq 1.0
+    arr[RTEnum1.new("v1"), Seasons::Winter, RTEnum2.new("u2")].should eq 2.0
+  end
 end
