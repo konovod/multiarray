@@ -46,13 +46,35 @@ module MultiArrayUtils
     end
 
     @@values = [] of RTEnum
+    @@names : Array(String)?
 
     def self.values
       @@values.as(Array(self))
     end
 
     def self.set_size(count)
+      @@names = nil
       @@values = Array(self).new(count) { |i| self.new(i, dont_check: true) }
+    end
+
+    def self.set_names(names)
+      n = names.size
+      @@names = Array(String).new(n) { |i| names[i] }
+      @@values = Array(self).new(n) { |i| self.new(i, dont_check: true) }
+    end
+
+    def to_s(io)
+      if names = @@names
+        io << names[@raw]
+      else
+        io << @raw
+      end
+    end
+
+    def inspect(io)
+      io << self.class.name << "{"
+      to_s(io)
+      io << "}"
     end
   end
 end

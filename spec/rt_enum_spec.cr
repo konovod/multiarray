@@ -22,4 +22,14 @@ describe MultiArrayUtils::RTEnum do
     expect_raises(ArgumentError) { RTEnum1.new(12) }
     RTEnum2.new(12).should eq RTEnum2.new(12)
   end
+
+  it "allow setting names" do
+    RTEnum1.set_names ["v1", "v2", "v3"]
+    RTEnum2.set_names ["u1", "u2", "u3", "u4"]
+    RTEnum1.values.map(&.to_s).should eq ["v1", "v2", "v3"]
+    RTEnum2.values.map(&.to_s).should eq ["u1", "u2", "u3", "u4"]
+    RTEnum2.set_size 5
+    RTEnum1.values.map(&.to_s).should eq ["v1", "v2", "v3"]
+    RTEnum2.values.map(&.to_s).should eq ["0", "1", "2", "3", "4"]
+  end
 end
