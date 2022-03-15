@@ -53,8 +53,8 @@ module MultiArrayUtils
       @raw = @@names_to_id[value]
     end
 
+    @@values_was_set = false
     @@values = [] of RTEnum
-
     @@names : Array(String)?
     @@names_to_id = {} of String => Int32
 
@@ -71,13 +71,17 @@ module MultiArrayUtils
       end
     end
 
-    def self.set_size(count)
+    def self.set_size(count, dont_lock = false)
+      raise "Changing values at runtime will break existing MultiArray, use 'dont_lock: true' if you are sure" if (!dont_lock) && @@values_was_set
+      @@values_was_set = true
       @@names = nil
       @@values = Array(self).new(count) { |i| self.new(i, dont_check: true) }
       build_str_map
     end
 
-    def self.set_names(names)
+    def self.set_names(names, *, dont_lock = false)
+      raise "Changing values at runtime will break existing MultiArray, use 'dont_lock: true' if you are sure" if (!dont_lock) && @@values_was_set
+      @@values_was_set = true
       n = names.size
       @@names = Array(String).new(n) { |i| names[i] }
       @@values = Array(self).new(n) { |i| self.new(i, dont_check: true) }
